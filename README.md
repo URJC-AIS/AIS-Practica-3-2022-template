@@ -6,12 +6,12 @@ Autor(es): Michel Maes Bermejo y Francisco Gortázar Bellas
 
 [Aplicación Heroku (CAMBIAR ENLACE)](https://ais-michel-nitflex.herokuapp.com/)
 
-## Desarrollo con GitFlow
+## Desarrollo con (GitFlow/TBD)
 
-Una vez creados los workflows y funcionando estos, pasamos a crear la nueva funcionalidad utilizando GitFlow:
+Una vez creados los workflows y funcionando estos, pasamos a crear la nueva funcionalidad utilizando (Gitflow o TBD):
 
 ```
-$ git flow init -d
+$ git clone ...
 ```
 
 ....
