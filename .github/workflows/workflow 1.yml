@@ -1,0 +1,49 @@
+on:
+  pull_request:
+    branches: 
+      - 'release-**'
+  workflow_dispatch:
+#checking
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    env:
+      HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
+      HEROKU_APP: ${{ secrets.HEROKU_APP }}
+    steps:
+    
+      #Initialize
+      - name: Clone repository
+        uses: actions/checkout@v2
+      - name: JDK version
+        uses: actions/setup-java@v1
+        with: 
+          java-version: 17
+      
+      #Test checking
+      - name: Run Unitary Test
+        run: mvn -B '-Dtest=es.codeurjc.ais.nitflex.unitary.FilmServiceUnitaryTest' test
+      - name: Run Integration Test
+        run: mvn -B '-Dtest=es.codeurjc.ais.nitflex.integration.UrlUtilsIntegrationTest' test
+      - name: Run RestAssured Test
+        run: mvn -B '-Dtest=es.codeurjc.ais.nitflex.e2e.rest.RestTest' test
+      - name: Run Selenium Test
+        run: mvn -B '-Dtest=es.codeurjc.ais.nitflex.e2e.selenium.SeleniumTest' test
+      
+      #Docker image
+      - name: DockerHub login
+        run: docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_TOKEN }}"
+      - name: image generation
+        run: mvn spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=${{ secrets.DOCKERHUB_USERNAME }}/nitflex:${{ github.sha }}
+      - name: image push
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/nitflex:${{ github.sha }}
+      
+      #Heroku
+      - name: Heroku login
+        run: heroku container:login
+      - name: Docker image rename
+        run: docker tag ${{ secrets.DOCKERHUB_USERNAME }}/nitflex:${{ github.sha }} registry.heroku.com/$HEROKU_APP/web
+      - name: Push
+        run: docker push registry.heroku.com/$HEROKU_APP/web
+      - name: Deploy
+        run: heroku container:release web
